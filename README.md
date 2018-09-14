@@ -8,16 +8,18 @@ This script will calculate the strength of your password according to the follow
 - inclusion of one or more numerical digits
 - inclusion of special characters, such as @, #, $
 
-In addition, it can check your password against passwords list if provided. Such list should be in `txt` format.
+In addition, it can check your password against passwords blacklist if provided. Various blacklists can be found in [SecLists](https://github.com/danielmiessler/SecLists/tree/master/Passwords) repository. List should be in `plaintext`.
 
 ## Quick Start
 
 ```bash
-$ python password_strength.py kD4NqEBCCPFC
-Your passwords strength is 7 out of 10
+$ python password_strength.py
+Enter your password:
+Passwords strength is 7 out of 10
 
-$ python password_strength.py abc123 worst.txt
-Your passwords strength is 1 out of 10
+$ python password_strength.py darkweb2017-top10000.txt
+Enter your password:
+Passwords strength is 1 out of 10
 ```
 
 ## Project Goals
