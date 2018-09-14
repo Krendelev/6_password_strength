@@ -1,63 +1,60 @@
 import string
 import argparse
-
-
-CHECK_WEIGHT = 2
+import getpass
 
 
 def check_case(password, case):
     return not set(password).isdisjoint(set(case))
 
 
-def check_letters(password):
+def assess_letters(password):
     strings = {
         string.ascii_lowercase,
         string.ascii_uppercase,
         string.digits,
         string.punctuation,
     }
-    return sum(
-        CHECK_WEIGHT * check_case(password, string)
-        for string in strings
-        )
+    return sum(check_case(password, string) for string in strings)
 
 
 def check_length(password):
     min_length = 8
-    return CHECK_WEIGHT * (len(password) >= min_length)
+    return len(password) >= min_length
 
 
 def check_repetitions(password):
     return len(password) > len(set(password))
 
 
-def check_list(password, password_list):
-    try:
-        with open(password_list) as list_handler:
-            return int(password in list_handler.read())
-    except FileNotFoundError:
-        print('Password list not found')
+def is_in_blacklist(password, blacklist):
+    return password in blacklist
 
 
-def get_password_strength(password, password_list=None):
+def get_password_strength(password):
+    weight_factor = 2
     return (
-        check_list(password, password_list) if password_list else None
-        ) or (
-        check_letters(password) +
-        check_length(password) -
+        assess_letters(password) * weight_factor +
+        check_length(password) * weight_factor -
         check_repetitions(password)
         )
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('password')
-    parser.add_argument('password_list', nargs='?')
+    parser.add_argument('blacklist', nargs='?')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = get_args()
-    print('Your passwords strength is {} out of 10'.format(
-        get_password_strength(args.password, args.password_list)
-        ))
+    password = getpass.getpass('Enter your password: ')
+    evaluated_password = False
+    if args.blacklist:
+        try:
+            with open(args.blacklist) as fh:
+                evaluated_password = is_in_blacklist(password, fh.read().split())
+        except FileNotFoundError:
+            print('Blacklist not found')
+    if not evaluated_password:
+        evaluated_password = get_password_strength(password)
+    print('Passwords strength is {:d} out of 10'.format(evaluated_password))
