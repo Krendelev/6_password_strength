@@ -7,16 +7,6 @@ def check_case(password, case):
     return not set(password).isdisjoint(set(case))
 
 
-def assess_letters(password):
-    strings = {
-        string.ascii_lowercase,
-        string.ascii_uppercase,
-        string.digits,
-        string.punctuation,
-    }
-    return sum(check_case(password, string) for string in strings)
-
-
 def check_length(password):
     min_length = 8
     return len(password) >= min_length
@@ -26,17 +16,25 @@ def check_repetitions(password):
     return len(password) > len(set(password))
 
 
-def is_in_blacklist(password, blacklist):
-    return password in blacklist
-
-
 def get_password_strength(password):
     weight_factor = 2
+    strings = {
+        string.ascii_lowercase,
+        string.ascii_uppercase,
+        string.punctuation,
+        string.digits,
+    }
+    case_count = sum(check_case(password, string) for string in strings)
     return (
-        assess_letters(password) * weight_factor +
+        case_count * weight_factor +
         check_length(password) * weight_factor -
         check_repetitions(password)
         )
+
+
+def load_blacklist(path):
+    with open(path) as file_handler:
+        return file_handler.read().splitlines()
 
 
 def get_args():
@@ -51,8 +49,7 @@ if __name__ == '__main__':
     evaluated_password = False
     if args.blacklist:
         try:
-            with open(args.blacklist) as fh:
-                evaluated_password = is_in_blacklist(password, fh.read().split())
+            evaluated_password = password in load_blacklist(args.blacklist)
         except FileNotFoundError:
             print('Blacklist not found')
     if not evaluated_password:
